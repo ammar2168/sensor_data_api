@@ -1,8 +1,9 @@
 package com.sensordata.demo.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sensordata.demo.entities.EventDto;
+import com.sensordata.demo.entities.SensorMeasurementEvent;
 import com.sensordata.demo.entities.Sensor;
+import com.sensordata.demo.exceptions.SystemException;
 import com.sensordata.demo.producer.EventProducer;
 import com.sensordata.demo.repository.AlertRepository;
 import com.sensordata.demo.repository.MeasurementRepository;
@@ -37,10 +38,9 @@ public class SensorServiceImpl implements SensorService {
 	}
 
 	@Override
-	public void sendMeasurement(String uuid, int level, String dateStr) throws JsonProcessingException {
-
-		EventDto eventDto = new EventDto(uuid, level, dateStr);
-		producer.produce(eventDto);
+	public void sendMeasurement(String uuid, int level, String dateStr) throws SystemException {
+		SensorMeasurementEvent event = new SensorMeasurementEvent(uuid, level, dateStr);
+		producer.produce(event);
 	}
 
 	@Override

@@ -8,16 +8,16 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class EventDto {
+public class SensorMeasurementEvent {
 
     private String uuid;
     private int level;
     private String createdAt;
 
-    public EventDto() {
+    public SensorMeasurementEvent() {
     }
 
-    public EventDto(String uuid, int level, String createdAt) {
+    public SensorMeasurementEvent(String uuid, int level, String createdAt) {
         this.uuid = uuid;
         this.level = level;
         this.createdAt = createdAt;

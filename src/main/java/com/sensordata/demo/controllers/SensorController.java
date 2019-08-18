@@ -10,9 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.sensordata.demo.entities.Sensor;
 import com.sensordata.demo.entities.SensorMeasurement;
-import com.sensordata.demo.exceptions.EmptyOrInvalidTimeFormatException;
-import com.sensordata.demo.exceptions.InvalidUUIDException;
-import com.sensordata.demo.exceptions.SensorValueEmptyException;
+import com.sensordata.demo.exceptions.*;
 import com.sensordata.demo.model.SensorInput;
 import com.sensordata.demo.services.SensorService;
 import com.sensordata.demo.utils.DateUtil;
@@ -27,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import static com.sensordata.demo.exceptions.ErrorCode.INVALID_PARAMETER;
+import static com.sensordata.demo.exceptions.ErrorCode.INVALID_UUID;
 
 @RestController
 public class SensorController {
@@ -48,8 +49,8 @@ public class SensorController {
      * @throws Exception
      */
     @PostMapping("/api/v1/sensors/{uuid}/measurements")
-    public ResponseEntity<Object> saveMesurements(HttpServletRequest request, HttpServletResponse response,
-                                                  @PathVariable(value = "uuid") String uuid, @RequestBody SensorInput sensorInput) {
+    public ResponseEntity<Object> captureMeasurement(HttpServletRequest request, HttpServletResponse response,
+                                                     @PathVariable(value = "uuid") String uuid, @RequestBody SensorInput sensorInput) {
 
         HashMap<String, String> resultMap = new HashMap<String, String>();
 
@@ -59,31 +60,24 @@ public class SensorController {
             // it.
             validateUUID(uuid);
             validateSensorInput(sensorInput);
-        } catch (SensorValueEmptyException | EmptyOrInvalidTimeFormatException | InvalidUUIDException e) {
-            resultMap.put("errorMessage", e.toString());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultMap);
-        }
-        SensorMeasurement measurement = null;
-
-        try {
             sensorService.sendMeasurement(uuid, sensorInput.getCo2(), sensorInput.getTime());
-        } catch (JsonProcessingException e) {
-            resultMap.put("errorMessage", "Please contact support");
+        } catch (Exception e) {
+            resultMap.put("errorMessage", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultMap);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body("Message received");
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    private void validateUUID(String uuid) throws InvalidUUIDException {
+    private void validateUUID(String uuid) throws SystemException {
         try {
             UUID validateUUID = UUID.fromString(uuid);
         } catch (Exception e) {
-            throw new InvalidUUIDException("Invalid UUID : " + uuid);
+            throw new SystemException(INVALID_UUID, "Invalid UUID : " + uuid);
         }
 
         if (uuid.length() != 36) {
-            throw new InvalidUUIDException("Invalid UUID : " + uuid);
+            throw new SystemException(ErrorCode.INVALID_UUID);
         }
 
     }
@@ -166,16 +160,16 @@ public class SensorController {
      * @throws EmptyOrInvalidTimeFormatException
      */
     private void validateSensorInput(SensorInput sensorInput)
-            throws SensorValueEmptyException, EmptyOrInvalidTimeFormatException {
+            throws SystemException {
         if (sensorInput.getCo2() == null) {
-            throw new SensorValueEmptyException("cO2 value must be provided");
+            throw new SystemException(INVALID_PARAMETER, "cO2 value must be provided");
         }
         if (sensorInput.getTime() == null) {
-            throw new EmptyOrInvalidTimeFormatException("Time value must be provided");
+            throw new SystemException(INVALID_PARAMETER, "Time value must be provided");
         }
 
         if (sensorInput.getTime().isEmpty() || DateUtil.convertToDate(sensorInput.getTime()) == null) {
-            throw new EmptyOrInvalidTimeFormatException("Time cannot be empty or in wrong format");
+            throw new SystemException(INVALID_PARAMETER,"Time cannot be empty or in wrong format");
         }
 
     }
