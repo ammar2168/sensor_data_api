@@ -1,0 +1,50 @@
+## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
+spring.datasource.url: jdbc:mysql://localhost:3306/sensor?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+spring.datasource.username: root
+spring.datasource.password:
+
+
+## Hibernate Properties
+
+# The SQL dialect makes Hibernate generate better SQL for the chosen database
+spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+
+# Hibernate ddl auto (create, create-drop, validate, update)
+
+
+spring.application.name: sensor-data-api
+server.port: 8181
+
+
+spring:
+  kafka:
+    properties:
+      security:
+        protocol: PLAINTEXT
+      sasl: ~
+    bootstrap-servers:
+      - localhost:9092
+    template:
+      default-topic: events
+    consumer:
+      #      heartbeat-interval: 10s
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      max-poll-records: 20
+    producer:
+      retries: 3
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        request:
+          timeout:
+            ms: 10000
+        max:
+          block:
+            ms: 850
+    listener:
+      ack-mode: manual-immediate
+      poll-timeout: 10s
