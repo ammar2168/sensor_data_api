@@ -2,23 +2,21 @@ package com.sensordata.demo.model;
 
 import javax.validation.constraints.NotEmpty;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.io.Serializable;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
 public class SensorInput implements Serializable {
 
 	@NotEmpty
 	private Integer co2;
 	private String time;
 
+	public SensorInput() {
+	}
+
+	public SensorInput(@NotEmpty Integer co2, String time) {
+		this.co2 = co2;
+		this.time = time;
+	}
 
 	public Integer getCo2() {
 		return co2;
